@@ -1,4 +1,4 @@
-#compdef psql pg_dump pg_dumpall createdb dropdb vacuumdb createuser dropuser initdb
+#compdef psql pg_dump pg_dumpall pg_restore createdb dropdb vacuumdb createuser dropuser initdb
 # ------------------------------------------------------------------------------
 # Description
 # -----------
@@ -245,6 +245,38 @@ _pg_dumpall () {
         --use-set-session-authorization'[use SET SESSION AUTHORIZATION cmds instead of ALTER OWNER]'
 }
 
+_pg_restore () {
+    local curcontext="$curcontext" state line expl
+    typeset -A opt_args
+
+    _arguments -C -s \
+		'1: :_files' \
+        "$_pgsql_common_opts[@]" \
+        {-a,--data-only}'[restore only the data, no schema]' \
+        {-c,--clean}'[clean (drop) database objects before recreating]' \
+        {-C,--create}'[create the target database]' \
+        {-d+,--dbname=}'[connect to database name]' \
+        {-e,--exit-on-error}'[exit on error, default is to continue]' \
+        {-f+,--file=}':output file name:_files' \
+        {-F+,--format=}':backup file format:_values "format" "p[plain text]" "t[tar]" "c[custom]"' \
+        {-j+,--jobs=}':use this many parallel jobs to restore:_values "jobs" 1 2 3 4 6 8 12 16 24 32' \
+        {-L+,--use-list=}':use table of contents from file for selecting output:_files' \
+        {-n+,--schema=}':restore only objects in this schema:_pgsql_restore_schemas' \
+        {-O,--no-owner}'[skip restoration of object ownership]' \
+        {-P+,--function=}':restore named function:_pgsql_restore_functions' \
+        {-s,--schema-only}'[restore only the schema, no data]' \
+        {-S+,--superuser=}':superuser user name to use for disabling triggers:_pgsql_users' \
+        {-t+,--table=}':restore named table:_pgsql_restore_tables' \
+        {-T+,--trigger=}':restore named trigger:_pgsql_restore_triggers' \
+        {-v,--verbose}'[verbose mode]' \
+        {-V,--version}'[output version information, then exit]' \
+        {-x,--no-privileges}'[skip restoration of access privileges (grant/revoke)]' \
+        --section=':restore named section:_values "section" pre-data data post-data' \
+        --disable-triggers'[disable triggers during data-only restore]' \
+        --no-security-labels'[do not restore security labels]' \
+        --no-tablespaces'[do not restore tablespace assignments]'
+}
+
 _createdb () {
     local curcontext="$curcontext" state line expl
     typeset -A opt_args
@@ -384,6 +416,7 @@ _pgsql_utils () {
     case "$service" in
         psql)     _psql "$@"     ;;
         pg_dump)  _pg_dump "$@"  ;;
+        pg_restore)  _pg_restore "$@"  ;;
         createdb) _createdb "$@" ;;
         dropdb)   _dropdb "$@"   ;;
         vacuumdb) _vacuumdb "$@"   ;;
